@@ -9,7 +9,6 @@ import (
 
     "github.com/aws/aws-sdk-go/aws"
     "github.com/aws/aws-sdk-go/service/ssm"
-    "github.com/aws/aws-sdk-go/aws/session"
     "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -24,28 +23,26 @@ func resourceInstanceReady() *schema.Resource {
                 Type:     schema.TypeList,
                 Required: true,
                 Elem:     &schema.Schema{Type: schema.TypeString},
+                ForceNew: true,
             },
             "timeout": {
                 Type:     schema.TypeInt,
                 Optional: true,
                 Default:  300,
+                ForceNew: true,
             },
             "interval": {
                 Type:     schema.TypeInt,
                 Optional: true,
                 Default:  10,
+                ForceNew: true,
             },
         },
     }
 }
 
 func resourceInstanceReadyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-    sess, err := session.NewSession()
-
-    if err != nil {
-        return diag.FromErr(fmt.Errorf("failed to create AWS session: %w", err))
-    }
-    client := ssm.New(sess)
+    client := meta.(*ssm.SSM)
 
     instanceIDsRaw := d.Get("instance_ids").([]interface{})
     var instanceIDs []*string
