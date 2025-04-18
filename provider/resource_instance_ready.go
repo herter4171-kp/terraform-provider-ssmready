@@ -4,7 +4,7 @@ package provider
 import (
     "context"
     "fmt"
-    "log"
+    //"log"
     "time"
 
     "github.com/aws/aws-sdk-go/aws"
@@ -53,7 +53,7 @@ func resourceInstanceReadyCreate(ctx context.Context, d *schema.ResourceData, me
     timeout := d.Get("timeout").(int)
     interval := d.Get("interval").(int)
 
-    log.Printf("[INFO] Waiting up to %d seconds for instances to become available in SSM", timeout)
+    fmt.Sprintf("Waiting up to %d seconds for instances to become available in SSM", timeout)
 
     deadline := time.Now().Add(time.Duration(timeout) * time.Second)
 
@@ -92,7 +92,8 @@ func resourceInstanceReadyCreate(ctx context.Context, d *schema.ResourceData, me
         }
 
         if allReady {
-            log.Printf("[INFO] All instances ready: %v", instanceIDs)
+            fmt.Sprintf("All instances ready.  Waiting 30s for Fleet Manager")
+            time.Sleep(30 * time.Second)
             break
         }
 
