@@ -71,8 +71,8 @@ func resourceInstanceReadyCreate(ctx context.Context, d *schema.ResourceData, me
         err := client.DescribeInstanceInformationPages(input,
             func(page *ssm.DescribeInstanceInformationOutput, lastPage bool) bool {
                 for _, info := range page.InstanceInformationList {
-                    if info.InstanceId != nil {
-                        if _, ok := ready[*info.InstanceId]; ok {
+                    if info.InstanceId != nil && info.PingStatus != nil {
+                        if _, ok := ready[*info.InstanceId]; ok && *info.PingStatus == "Online" {
                             ready[*info.InstanceId] = true
                         }
                     }
