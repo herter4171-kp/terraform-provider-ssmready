@@ -8,6 +8,7 @@ import (
 
     "github.com/aws/aws-sdk-go/aws"
     "github.com/aws/aws-sdk-go/service/ssm"
+    //"github.com/hashicorp/terraform-plugin-log/tflog"
     "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -33,7 +34,7 @@ func resourceInstanceReady() *schema.Resource {
             "timeout": {
                 Type:     schema.TypeInt,
                 Optional: true,
-                Default:  300,
+                Default:  3600,
                 ForceNew: true,
             },
             "interval": {

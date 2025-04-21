@@ -38,7 +38,7 @@ provider "ssmready" {
 ```
 resource "ssmready_ssm_instance_ready" "example" {
   instance_ids = ["i-abc123"]
-  timeout      = 120 #s
-  interval     = 10  #s
+  timeout      = 3600 #s default
+  interval     = 10   #s default
 }
 ```
