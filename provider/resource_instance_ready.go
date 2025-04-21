@@ -4,7 +4,7 @@ package provider
 import (
     "context"
     "fmt"
-    //"log"
+    "log"
     "time"
 
     "github.com/aws/aws-sdk-go/aws"
@@ -53,7 +53,7 @@ func resourceInstanceReadyCreate(ctx context.Context, d *schema.ResourceData, me
     timeout := d.Get("timeout").(int)
     interval := d.Get("interval").(int)
 
-    fmt.Println("Waiting up to %d seconds for instances to become available in SSM", timeout)
+    log.Printf("[INFO] Waiting up to %d seconds for instances to become available in SSM", timeout)
 
     deadline := time.Now().Add(time.Duration(timeout) * time.Second)
 
@@ -92,7 +92,7 @@ func resourceInstanceReadyCreate(ctx context.Context, d *schema.ResourceData, me
         }
 
         if allReady {
-            fmt.Println("All instances ping as online.  Waiting for Fleet Manager")
+            log.Printf("[INFO] All instances ping as online.  Waiting for Fleet Manager")
             break
         }
 
@@ -134,7 +134,7 @@ func waitForInventoryPresence(ssmClient *ssm.SSM, instanceID string, timeout tim
 
         // If inventory data is returned, assume instance is Fleet Manager ready
         if len(resp.Entities) > 0 {
-            fmt.Println("Instance %s is in Fleet Manager", instanceID)
+            log.Printf("[INFO] Instance %s is in Fleet Manager", instanceID)
             return nil
         }
 
