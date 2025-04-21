@@ -92,15 +92,51 @@ func resourceInstanceReadyCreate(ctx context.Context, d *schema.ResourceData, me
         }
 
         if allReady {
-            fmt.Sprintf("All instances ready.  Waiting 30s for Fleet Manager")
-            time.Sleep(30 * time.Second)
+            fmt.Sprintf("All instances ready.  Waiting for Fleet Manager")
             break
         }
 
         time.Sleep(time.Duration(interval) * time.Second)
     }
 
+    for _, id := range instanceIDs {
+        waitForInventoryPresence(client, *id, 10*time.Minute)
+    }
+
     // Just use a deterministic ID from the list
     d.SetId(fmt.Sprintf("ssm-ready-%d", time.Now().Unix()))
     return nil
+}
+
+func waitForInventoryPresence(ssmClient *ssm.SSM, instanceID string, timeout time.Duration) error {
+    deadline := time.Now().Add(timeout)
+
+    for {
+        // Check for timeout
+        if time.Now().After(deadline) {
+            return fmt.Errorf("Timeout waiting for instance %s to appear in SSM inventory", instanceID)
+        }
+
+        // Call GetInventory with filter on the specific instance ID
+        resp, err := ssmClient.GetInventory(&ssm.GetInventoryInput{
+            Filters: []*ssm.InventoryFilter{
+                {
+                    Key:    aws.String("AWS:InstanceInformation.InstanceId"),
+                    Values: []*string{aws.String(instanceID)},
+                    Type:   aws.String("Equal"),
+                },
+            },
+        })
+        
+        if err != nil {
+            return fmt.Errorf("Error querying inventory for instance %s: %w", instanceID, err)
+        }
+
+        // If inventory data is returned, assume instance is Fleet Manager ready
+        if len(resp.Entities) > 0 {
+            return nil
+        }
+
+        time.Sleep(5 * time.Second)
+    }
 }
