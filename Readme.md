@@ -1,5 +1,7 @@
 # terraform-provider-ssmready
 
+[![Release](https://github.com/herter4171-kp/terraform-provider-ssmready/actions/workflows/release.yml/badge.svg)](https://github.com/herter4171-kp/terraform-provider-ssmready/actions/workflows/release.yml)
+
 This Terrafor provider serves a single purpose.  From a given list of instance IDs, it waits for them to join SSM.  Only Terraform providers can read the environment variables for AWS credentials, so rather than a `local-exec`, we distilled down with some GPT help from [terraform-provider-ssm](https://github.com/arthurgustin/terraform-provider-ssm) to just contain what we need with simple enough syntax and brevity (109 lines) to ascertain that credentials and API calls are used strictly for the intended purpose.
 
 ## Building
