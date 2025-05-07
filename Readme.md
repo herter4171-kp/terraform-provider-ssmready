@@ -44,3 +44,6 @@ resource "ssmready_ssm_instance_ready" "example" {
   interval     = 10   #s default
 }
 ```
+
+## Example Diagram
+![alt text](diag.png)
