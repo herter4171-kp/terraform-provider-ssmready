@@ -1,0 +1,22 @@
+---
+# Complex variables that can't be expressed as simple key-value pairs
+app_config:
+  name: myapp
+  version: 1.0.0
+  ports:
+    - 8080
+    - 8443
+  features:
+    - authentication
+    - logging
+    - monitoring
+
+database:
+  host: db.example.com
+  port: 5432
+  name: myapp_db
+  pool_size: 10
+
+# Simple variables work too
+environment: testing
+debug_mode: true

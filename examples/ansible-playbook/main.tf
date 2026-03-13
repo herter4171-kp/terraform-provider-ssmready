@@ -27,6 +27,10 @@ resource "ssmready_ansible_playbook" "configure" {
 
   playbook_content = file("${path.module}/playbook.yml")
 
+  # Test vars file with complex data structures
+  vars_file_content = file("${path.module}/vars.yml")
+
+  # extra_vars override vars from the file
   extra_vars = {
     environment = "testing"
     app_version = "1.0.0"

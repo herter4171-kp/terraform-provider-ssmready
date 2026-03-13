@@ -36,6 +36,11 @@ func resourceAnsiblePlaybook() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				ForceNew: true,
 			},
+			"vars_file_content": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
 			"timeout": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -97,6 +102,20 @@ func resourceAnsiblePlaybookCreate(ctx context.Context, d *schema.ResourceData, 
 		fmt.Sprintf("cat > playbook.yml << 'PLAYBOOK_EOF'\n%s\nPLAYBOOK_EOF", playbookContent),
 	}
 
+	// Add vars file if provided
+	varsFileProvided := false
+	if varsFileContent, ok := d.GetOk("vars_file_content"); ok {
+		varsFileProvided = true
+		commands = append(commands, fmt.Sprintf("cat > vars.yml << 'VARS_EOF'\n%s\nVARS_EOF", varsFileContent.(string)))
+	}
+
+	// Build ansible-playbook command with appropriate flags
+	ansibleCmd := "ansible-playbook playbook.yml"
+	
+	if varsFileProvided {
+		ansibleCmd += " -e @vars.yml"
+	}
+
 	// Add extra vars if provided
 	if extraVarsRaw, ok := d.GetOk("extra_vars"); ok {
 		extraVars := extraVarsRaw.(map[string]interface{})
@@ -105,13 +124,11 @@ func resourceAnsiblePlaybookCreate(ctx context.Context, d *schema.ResourceData, 
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("failed to marshal extra_vars: %w", err))
 			}
-			commands = append(commands, fmt.Sprintf("ansible-playbook playbook.yml --extra-vars '%s'", string(varsJSON)))
-		} else {
-			commands = append(commands, "ansible-playbook playbook.yml")
+			ansibleCmd += fmt.Sprintf(" --extra-vars '%s'", string(varsJSON))
 		}
-	} else {
-		commands = append(commands, "ansible-playbook playbook.yml")
 	}
+
+	commands = append(commands, ansibleCmd)
 
 	tflog.Info(ctx, "Running Ansible playbook", map[string]interface{}{
 		"instance_count": len(instanceIDs),

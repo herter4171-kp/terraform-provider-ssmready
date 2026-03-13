@@ -30,17 +30,21 @@ This provider uses [GoReleaser](https://goreleaser.com/) with GitHub Actions for
 
 To create a new release:
 
-```bash
-# Create and push a version tag (e.g., v0.0.11 for the next version)
-git tag v0.0.11
-git push origin v0.0.11
+1. Create a PR with your changes
+2. Merge the PR to `main`
+3. Create and push a version tag on the main branch:
+   ```bash
+   git checkout main
+   git pull
+   git tag v0.0.11
+   git push origin v0.0.11
+   ```
 
-# GitHub Actions will automatically:
-# 1. Build binaries for all platforms
-# 2. Sign the release
-# 3. Publish to GitHub releases
-# 4. Update the Terraform Registry
-```
+GitHub Actions will automatically:
+1. Build binaries for all platforms
+2. Sign the release
+3. Publish to GitHub releases
+4. Update the Terraform Registry
 
 The version number comes from the git tag, not from any file in the repository.
 
