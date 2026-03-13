@@ -2,12 +2,16 @@
 
 [![Release](https://github.com/herter4171-kp/terraform-provider-ssmready/actions/workflows/release.yml/badge.svg)](https://github.com/herter4171-kp/terraform-provider-ssmready/actions/workflows/release.yml)
 
-This Terraform provider enables SSM-based automation for EC2 instances. It provides two resources:
+This Terraform provider enables instance configuration as part of your infrastructure deployment. It provides two resources:
 
 1. **ssmready_ssm_instance_ready** - Waits for instances to join SSM Fleet Manager
-2. **ssmready_ansible_playbook** - Executes Ansible playbooks on instances via SSM Run Command
+2. **ssmready_ansible_playbook** - Runs Ansible playbooks on instances via SSM Run Command
 
-Only Terraform providers can read the environment variables for AWS credentials, so rather than a `local-exec`, we distilled down with some GPT help from [terraform-provider-ssm](https://github.com/arthurgustin/terraform-provider-ssm) to contain what we need with simple enough syntax to ascertain that credentials and API calls are used strictly for the intended purpose.
+This allows you to configure operating systems and install software directly within your Terraform workflow, without requiring separate configuration management runs or manual SSH access. The provider uses AWS Systems Manager to execute commands, so instances only need the SSM agent and appropriate IAM permissions.
+
+## Why This Approach
+
+Terraform providers can access AWS credentials from the environment, making this more secure than using `local-exec` provisioners. The implementation is focused and straightforward - derived from [terraform-provider-ssm](https://github.com/arthurgustin/terraform-provider-ssm) with help from GPT to keep the code minimal and auditable.
 
 ## Building
 

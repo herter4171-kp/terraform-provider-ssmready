@@ -1,9 +1,13 @@
 # ssmready Provider
 
-This provider enables SSM-based automation for EC2 instances with two resources:
+This provider enables instance configuration within Terraform workflows using AWS Systems Manager.
+
+## Resources
 
 1. **ssmready_ssm_instance_ready** - Waits for instances to join SSM Fleet Manager
-2. **ssmready_ansible_playbook** - Executes Ansible playbooks via SSM Run Command (includes automatic SSM wait)
+2. **ssmready_ansible_playbook** - Runs Ansible playbooks on instances via SSM Run Command
+
+The Ansible resource automatically waits for SSM readiness before executing, allowing you to configure operating systems and install software as part of your infrastructure deployment. This eliminates the need for separate configuration management runs or SSH access - instances only need the SSM agent and appropriate IAM permissions.
 
 ## Example Usage
 

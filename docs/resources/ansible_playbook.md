@@ -1,6 +1,8 @@
 # ssmready_ansible_playbook
 
-Executes an Ansible playbook on EC2 instances via AWS Systems Manager (SSM) Run Command. This resource automatically waits for instances to be ready in SSM before executing the playbook, so no separate `ssmready_ssm_instance_ready` resource is needed.
+Runs an Ansible playbook on EC2 instances via AWS Systems Manager Run Command. This resource automatically waits for instances to be ready in SSM before executing the playbook.
+
+This allows you to configure operating systems and install software as part of your Terraform workflow, without requiring SSH access or separate configuration management runs.
 
 ## Example Usage
 
