@@ -20,6 +20,7 @@ func Provider() *schema.Provider {
         },
         ResourcesMap: map[string]*schema.Resource{
             "ssmready_ssm_instance_ready": resourceInstanceReady(),
+            "ssmready_ansible_playbook":   resourceAnsiblePlaybook(),
         },
         ConfigureContextFunc: func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
             region := d.Get("region").(string)

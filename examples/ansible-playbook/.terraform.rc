@@ -1,0 +1,7 @@
+provider_installation {
+  dev_overrides {
+    "herter4171-kp/ssmready" = "../../"
+  }
+
+  direct {}
+}

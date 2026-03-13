@@ -1,0 +1,4 @@
+# Copy this file to terraform.tfvars and update with your values
+
+instance_ids = ["i-0a2bcf2526ab300db", "i-0a90d2b400f72e5a2"]
+aws_region   = "us-gov-east-1"

@@ -1,0 +1,54 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Display environment variable
+      debug:
+        msg: "Running in {{ environment }} environment"
+
+    - name: Display application version
+      debug:
+        msg: "Application version: {{ app_version }}"
+
+    - name: Display app config from vars file
+      debug:
+        msg: "App name: {{ app_config.name }}, Ports: {{ app_config.ports | join(', ') }}"
+
+    - name: Display database config from vars file
+      debug:
+        msg: "Database: {{ database.host }}:{{ database.port }}/{{ database.name }}"
+
+    - name: Show system information
+      debug:
+        msg: "Running on {{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+    - name: Create test file with variables
+      copy:
+        content: |
+          Environment: {{ environment }}
+          App Version: {{ app_version }}
+          App Name: {{ app_config.name }}
+          Ports: {{ app_config.ports | join(', ') }}
+          Database: {{ database.host }}:{{ database.port }}
+          Hostname: {{ ansible_hostname }}
+          Timestamp: {{ ansible_date_time.iso8601 }}
+        dest: /tmp/ssmready-test.txt
+        mode: '0644'
+
+    - name: Display test file contents
+      command: cat /tmp/ssmready-test.txt
+      register: test_output
+
+    - name: Show test file output
+      debug:
+        var: test_output.stdout_lines
+
+    - name: Verify variables were passed correctly
+      assert:
+        that:
+          - environment is defined
+          - app_version is defined
+          - app_config is defined
+          - database is defined
+        success_msg: "All required variables are present"
+        fail_msg: "Missing required variables"
