@@ -1,0 +1,28 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: yes
+  tasks:
+    - name: Display system information
+      debug:
+        msg: "Running on {{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+    - name: Show current date and time
+      debug:
+        msg: "Current time is {{ ansible_date_time.iso8601 }}"
+
+    - name: Echo test message
+      command: echo "ansible-ssm CLI test successful"
+      register: echo_result
+
+    - name: Display echo result
+      debug:
+        var: echo_result.stdout
+
+    - name: Show environment variable
+      debug:
+        msg: "Environment is {{ environment | default('not set') }}"
+
+    - name: Show app version
+      debug:
+        msg: "App version is {{ app_version | default('not set') }}"

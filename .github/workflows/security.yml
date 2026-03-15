@@ -1,0 +1,201 @@
+name: Security Scanning
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  build-and-vet:
+    name: Build and Vet
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Go
+        uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
+        with:
+          go-version: '1.23'
+          cache: false
+
+      - name: Initialize go.mod
+        run: |
+          go mod init ssmready
+          go mod tidy
+
+      - name: Run go vet on provider
+        run: go vet ./...
+
+      - name: Run go vet on CLI
+        run: go vet ./cmd/ansible-ssm
+
+      - name: Build provider binary
+        run: |
+          CGO_ENABLED=0 go build -o terraform-provider-ssmready
+        env:
+          GOOS: linux
+          GOARCH: amd64
+
+      - name: Build CLI binary
+        run: |
+          CGO_ENABLED=0 go build -o ansible-ssm ./cmd/ansible-ssm
+        env:
+          GOOS: linux
+          GOARCH: amd64
+
+      - name: Upload provider binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-provider-ssmready
+          path: terraform-provider-ssmready
+          retention-days: 1
+
+      - name: Upload CLI binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ansible-ssm
+          path: ansible-ssm
+          retention-days: 1
+
+  trivy-provider:
+    name: Trivy Scan - Provider
+    runs-on: ubuntu-latest
+    needs: build-and-vet
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Go
+        uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
+        with:
+          go-version: '1.23'
+          cache: false
+
+      - name: Initialize go.mod
+        run: |
+          go mod init ssmready
+          go mod tidy
+
+      - name: Download provider binary
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-provider-ssmready
+
+      - name: Run Trivy vulnerability scanner on provider
+        uses: aquasecurity/trivy-action@f781cce5aab226378ee181d764ab90ea0be3cdd8 # v0.29.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-provider-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          scanners: 'vuln,secret,misconfig'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-provider-results.sarif'
+          category: 'trivy-provider'
+
+      - name: Run Trivy on provider binary
+        uses: aquasecurity/trivy-action@f781cce5aab226378ee181d764ab90ea0be3cdd8 # v0.29.0
+        with:
+          scan-type: 'fs'
+          scan-ref: 'terraform-provider-ssmready'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+
+  trivy-cli:
+    name: Trivy Scan - CLI
+    runs-on: ubuntu-latest
+    needs: build-and-vet
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Go
+        uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
+        with:
+          go-version: '1.23'
+          cache: false
+
+      - name: Initialize go.mod
+        run: |
+          go mod init ssmready
+          go mod tidy
+
+      - name: Download CLI binary
+        uses: actions/download-artifact@v4
+        with:
+          name: ansible-ssm
+
+      - name: Run Trivy vulnerability scanner on CLI
+        uses: aquasecurity/trivy-action@f781cce5aab226378ee181d764ab90ea0be3cdd8 # v0.29.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-cli-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          scanners: 'vuln,secret,misconfig'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-cli-results.sarif'
+          category: 'trivy-cli'
+
+      - name: Run Trivy on CLI binary
+        uses: aquasecurity/trivy-action@f781cce5aab226378ee181d764ab90ea0be3cdd8 # v0.29.0
+        with:
+          scan-type: 'fs'
+          scan-ref: 'ansible-ssm'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+
+  trivy-dependencies:
+    name: Trivy Scan - Dependencies
+    runs-on: ubuntu-latest
+    needs: build-and-vet
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Go
+        uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
+        with:
+          go-version: '1.23'
+          cache: false
+
+      - name: Initialize go.mod
+        run: |
+          go mod init ssmready
+          go mod tidy
+
+      - name: Run Trivy on Go dependencies
+        uses: aquasecurity/trivy-action@f781cce5aab226378ee181d764ab90ea0be3cdd8 # v0.29.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-deps-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          scanners: 'vuln'
+
+      - name: Upload dependency scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-deps-results.sarif'
+          category: 'trivy-dependencies'

@@ -1,0 +1,5 @@
+---
+# Test variables file
+environment: testing
+app_version: 1.0.0
+test_mode: true
